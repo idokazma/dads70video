@@ -1,7 +1,7 @@
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont } from "@remotion/fonts";
 import { config } from "./config";
-import { PHOTOS } from "./photos";
+import { STORY } from "./photos";
 import { PhotoSlide } from "./PhotoSlide";
 import { TitleCard } from "./TitleCard";
 
@@ -16,7 +16,11 @@ const f = (s: number) => Math.round(s * config.fps);
 // and overflows the stack with hundreds of photos.)
 const segments = () => [
   { key: "intro", frames: f(config.introSeconds), el: <TitleCard big="70" title={config.introTitle} subtitle={config.introSubtitle} /> },
-  ...PHOTOS.map((p, i) => ({ key: p.src, frames: f(config.secondsPerPhoto), el: <PhotoSlide photo={p} index={i} /> })),
+  ...STORY.map((item, i) =>
+    item.kind === "chapter"
+      ? { key: `ch${i}`, frames: f(config.chapterSeconds), el: <TitleCard title={item.title} subtitle={item.sub} small /> }
+      : { key: item.photo.src, frames: f(config.secondsPerPhoto), el: <PhotoSlide photo={item.photo} index={i} /> },
+  ),
   { key: "outro", frames: f(config.outroSeconds), el: <TitleCard title={config.outroTitle} subtitle={config.outroSubtitle} /> },
 ];
 

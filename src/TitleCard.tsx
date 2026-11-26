@@ -1,7 +1,7 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { config } from "./config";
 
-export const TitleCard: React.FC<{ title: string; subtitle: string; big?: string }> = ({ title, subtitle, big }) => {
+export const TitleCard: React.FC<{ title: string; subtitle: string; big?: string; small?: boolean }> = ({ title, subtitle, big, small }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const pop = spring({ frame, fps, config: { damping: 14 } });
@@ -34,7 +34,7 @@ export const TitleCard: React.FC<{ title: string; subtitle: string; big?: string
           {big}
         </div>
       )}
-      <div style={{ fontFamily: "Playfair Display, serif", fontSize: 96, color: "white", opacity: pop, marginTop: 10 }}>
+      <div style={{ fontFamily: "Playfair Display, serif", fontSize: small ? 110 : 96, fontStyle: small ? "italic" : undefined, color: "white", opacity: pop, marginTop: 10 }}>
         {title}
       </div>
       <div

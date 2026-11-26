@@ -11,8 +11,9 @@ export const config = {
 
   introSeconds: 5,
   outroSeconds: 6,
-  secondsPerPhoto: 4,
-  transitionSeconds: 1,
+  chapterSeconds: 3,
+  secondsPerPhoto: 3.5,
+  transitionSeconds: 0.8,
 
   // Drop an mp3 at public/music.mp3 and set this to "music.mp3".
   music: null as string | null,
