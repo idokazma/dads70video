@@ -68,14 +68,26 @@ entries.sort((a, b) => {
   return a.rel.localeCompare(b.rel, undefined, { numeric: true });
 });
 
-await fs.rm(OUT_DIR, { recursive: true, force: true });
 await fs.mkdir(OUT_DIR, { recursive: true });
+const exists = (p) => fs.access(p).then(() => true, () => false);
 
+// Incremental: output names come from the original path, and photos already
+// processed (per the previous manifest) are reused instead of re-encoded.
 const manifest = [];
-let i = 0;
+let i = 0, reused = 0;
 for (const e of entries) {
   i++;
-  const name = `${String(i).padStart(3, "0")}.jpg`;
+  const name = e.rel.replace(/[\\/]/g, "__").replace(/\.[^.]+$/, "") + ".jpg";
+  const prev = existing.get(e.rel);
+  if (prev) {
+    const oldPath = path.join(ROOT, "public", prev.src), newPath = path.join(OUT_DIR, name);
+    if (oldPath !== newPath && (await exists(oldPath)) && !(await exists(newPath))) await fs.rename(oldPath, newPath);
+    if (await exists(newPath)) {
+      manifest.push({ ...prev, src: `photos/${name}`, date: e.date });
+      reused++;
+      continue;
+    }
+  }
   try {
     let input = e.file;
     if ([".heic", ".heif"].includes(path.extname(e.file).toLowerCase())) {
@@ -87,15 +99,14 @@ for (const e of entries) {
       .resize({ width: LONG_EDGE, height: LONG_EDGE, fit: "inside", withoutEnlargement: true })
       .jpeg({ quality: 88, mozjpeg: true })
       .toFile(path.join(OUT_DIR, name));
-    const prev = existing.get(e.rel) ?? {};
     manifest.push({
       src: `photos/${name}`,
       original: e.rel,
       width: info.width,
       height: info.height,
       date: e.date,
-      caption: prev.caption ?? "",
-      year: prev.year ?? "", // fill in by hand: EXIF dates on scanned photos are the scan date
+      caption: prev?.caption ?? "",
+      year: prev?.year ?? "", // fill in by hand: EXIF dates on scanned photos are the scan date
     });
     process.stdout.write(`\r${i}/${entries.length} ${e.rel.slice(0, 60).padEnd(60)}`);
   } catch (err) {
@@ -103,6 +114,10 @@ for (const e of entries) {
   }
 }
 
+// drop outputs whose originals are gone
+const keep = new Set(manifest.map((m) => path.basename(m.src)));
+for (const f of await fs.readdir(OUT_DIR)) if (!keep.has(f)) await fs.unlink(path.join(OUT_DIR, f));
+
 await fs.writeFile(MANIFEST, JSON.stringify(manifest, null, 2) + "\n");
-console.log(`\n\nWrote ${manifest.length} photos to public/photos and src/photos.json`);
+console.log(`\n\nWrote ${manifest.length} photos to public/photos and src/photos.json (${reused} reused, ${manifest.length - reused} new)`);
 if (skipped.length) console.log(`Ignored ${skipped.length} non-image files (e.g. videos): ${skipped.slice(0, 5).map((f) => path.basename(f)).join(", ")}${skipped.length > 5 ? " ..." : ""}`);

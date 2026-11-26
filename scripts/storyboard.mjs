@@ -37,7 +37,7 @@ for (const s of story) {
     segs.push({
       kind: "photo", n: ++n, dur: C.photo, w: p.width, h: p.height,
       caption: [p.year, p.caption].filter(Boolean).join(" · "),
-      file: p.original.split("/").pop(), orig: p.original, key: p.original,
+      file: p.original.split("/").pop(), orig: p.original, key: p.original, isNew: !!s.new,
       img: `data:image/jpeg;base64,${img.toString("base64")}`,
     });
   }
@@ -89,6 +89,7 @@ h2{font-family:"Playfair Display",serif;font-weight:400;font-size:24px;margin:40
 .seg:not(.fixed){cursor:grab}
 .ghost-drop{opacity:.3;outline:2px dashed var(--gold)}
 .chosen{box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.newb{position:absolute;bottom:6px;left:6px;background:#3fa66b;color:#fff;font-weight:700;font-size:10px;letter-spacing:.08em;padding:2px 6px;border-radius:4px}
 .seg.moved .num{background:var(--gold);color:#1b1408}
 .seg.active{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
 .thumb{aspect-ratio:16/9;background:#000 center/cover no-repeat;position:relative}
@@ -159,7 +160,7 @@ SEGS.forEach(s=>{const L=document.createElement("div");L.className="layer";
  s.el=L;player.appendChild(L);
  const B=document.createElement("div");
  if(s.kind==="photo"){B.className="seg";
-  B.innerHTML='<div class="thumb '+(fill?"":"contain")+'" style="background-image:url('+s.img+')"><span class="num">#'+s.n+'</span><button class="x" title="Remove from video">✕</button></div><div class="meta"><span class="st"></span><span>'+(s.caption||(s.w>s.h?"landscape":"portrait"))+'</span></div>';
+  B.innerHTML='<div class="thumb '+(fill?"":"contain")+'" style="background-image:url('+s.img+')"><span class="num">#'+s.n+'</span>'+(s.isNew?'<span class="newb">NEW</span>':'')+'<button class="x" title="Remove from video">✕</button></div><div class="meta"><span class="st"></span><span>'+(s.caption||(s.w>s.h?"landscape":"portrait"))+'</span></div>';
   B.querySelector(".x").onclick=e=>{e.stopPropagation();toggleRemove(s)};}
  else{B.className="seg card "+(s.kind==="chapter"?"ch":"fixed");B.innerHTML=(s.big?'<div class="cbig">'+s.big+'</div>':"")+'<div><div class="ct">'+s.title+'</div><div class="cs">'+s.sub+'</div></div><div class="ctime"><span class="st"></span> · '+s.dur+'s</div>';}
  B.onclick=()=>{if(s.removed)return;show(s);player.scrollIntoView({behavior:"smooth",block:"center"})};

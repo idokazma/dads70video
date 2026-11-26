@@ -11,12 +11,13 @@ const text = fs.readFileSync(process.argv[2] ?? 0, "utf8");
 const story = JSON.parse(fs.readFileSync(STORY, "utf8"));
 
 const byNum = new Map(); // n -> photo path
+const isNew = new Set(); // keep the storyboard NEW marker
 const subs = new Map(); // chapter -> sub
 const chapterOrder = [];
 let n = 0;
 for (const s of story) {
   if (s.chapter) { subs.set(s.chapter, s.sub ?? ""); chapterOrder.push(s.chapter); }
-  else byNum.set(++n, s.photo);
+  else { byNum.set(++n, s.photo); if (s.new) isNew.add(s.photo); }
 }
 
 const removed = new Set();
@@ -56,7 +57,7 @@ if (bad.length) throw new Error(`Unknown or removed numbers in order: ${bad.join
 const missing = [...byNum.keys()].filter((i) => !removed.has(i) && !placed.includes(i));
 if (missing.length) throw new Error(`Not placed and not removed: ${missing.join(", ")}`);
 
-const out = order.flatMap((c) => [{ chapter: c.title, sub: subs.get(c.title) }, ...c.ids.map((i) => ({ photo: byNum.get(i) }))]);
+const out = order.flatMap((c) => [{ chapter: c.title, sub: subs.get(c.title) }, ...c.ids.map((i) => (isNew.has(byNum.get(i)) ? { photo: byNum.get(i), new: true } : { photo: byNum.get(i) }))]);
 fs.writeFileSync(STORY, JSON.stringify(out, null, 1) + "\n");
 console.log(`Removed ${removed.size}; now ${placed.length} photos in ${order.length} chapters:`);
 for (const c of order) console.log(`  ${c.title}: ${c.ids.length}`);
