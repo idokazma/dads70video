@@ -162,7 +162,7 @@ SEGS.forEach(s=>{const L=document.createElement("div");L.className="layer";
   B.innerHTML='<div class="thumb '+(fill?"":"contain")+'" style="background-image:url('+s.img+')"><span class="num">#'+s.n+'</span><button class="x" title="Remove from video">✕</button></div><div class="meta"><span class="st"></span><span>'+(s.caption||(s.w>s.h?"landscape":"portrait"))+'</span></div>';
   B.querySelector(".x").onclick=e=>{e.stopPropagation();toggleRemove(s)};}
  else{B.className="seg card "+(s.kind==="chapter"?"ch":"fixed");B.innerHTML=(s.big?'<div class="cbig">'+s.big+'</div>':"")+'<div><div class="ct">'+s.title+'</div><div class="cs">'+s.sub+'</div></div><div class="ctime"><span class="st"></span> · '+s.dur+'s</div>';}
- B.onclick=()=>{if(s.removed)return;seek(s.start+0.01);player.scrollIntoView({behavior:"smooth",block:"center"})};
+ B.onclick=()=>{if(s.removed)return;show(s);player.scrollIntoView({behavior:"smooth",block:"center"})};
  B.dataset.key=s.key;s.tile=B;board.appendChild(B);});
 const byKey=new Map(SEGS.map(s=>[s.key,s]));
 const orderChanged=()=>SEGS.some((s,i)=>s!==ORIG[i]);
@@ -201,8 +201,11 @@ function seek(v){t=Math.max(0,Math.min(TOTAL,v));render()}
 function toast(m){const e=$("toast");e.textContent=m;e.classList.add("on");setTimeout(()=>e.classList.remove("on"),1800)}
 $("play").onclick=()=>toggle();
 $("seek").oninput=e=>seek(+e.target.value);
-$("prev").onclick=()=>{const c=LIVE.filter(s=>s.start<t-0.5).pop();seek(c?c.start+0.01:0)};
-$("next").onclick=()=>{const c=LIVE.find(s=>s.start>t+0.01);if(c)seek(c.start+0.01)};
+// land just after the crossfade so the chosen segment is fully visible, not the one fading out
+function show(s){const i=LIVE.indexOf(s);seek(i<=0?0:s.start+FADE+0.05)}
+const curIdx=()=>{let c=0;LIVE.forEach((s,i)=>{if(t>=s.start)c=i});return c};
+$("prev").onclick=()=>show(LIVE[Math.max(0,curIdx()-1)]);
+$("next").onclick=()=>show(LIVE[Math.min(LIVE.length-1,curIdx()+1)]);
 $("reset").onclick=()=>{if(!confirm("Undo all removals and reordering?"))return;
  removed.clear();moved.clear();save();SEGS=ORIG.slice();store(OKEY,null);store(MKEY,[]);
  SEGS.forEach(s=>board.appendChild(s.tile));layout();active=-1;render()};
