@@ -1,0 +1,26 @@
+{
+  "name": "dads70video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "photos": "node scripts/prepare-photos.mjs",
+    "dev": "remotion studio",
+    "render": "remotion render Birthday out/dad-70.mp4",
+    "preview-still": "remotion still Birthday out/still.png --frame=200",
+    "download": "node scripts/download-album.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.547",
+    "@remotion/fonts": "^4.0.547",
+    "exifr": "^7.1.3",
+    "heic-convert": "^2.1.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.547",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.3",
+    "typescript": "^7.0.2"
+  }
+}

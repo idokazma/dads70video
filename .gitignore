@@ -1,0 +1,6 @@
+node_modules/
+out/
+.DS_Store
+# family photos: kept out of git (re-download with `npm run download -- <album link>`)
+photos-original/
+public/photos/
