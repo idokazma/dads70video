@@ -7,7 +7,8 @@
     "dev": "remotion studio",
     "render": "remotion render Birthday out/dad-70.mp4",
     "preview-still": "remotion still Birthday out/still.png --frame=200",
-    "download": "node scripts/download-album.mjs"
+    "download": "node scripts/download-album.mjs",
+    "storyboard": "node scripts/storyboard.mjs"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.547",
